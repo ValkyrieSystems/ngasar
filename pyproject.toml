@@ -92,19 +92,19 @@ ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 module = [
-    "sarkit.standards.general.base",
-    "sarkit.standards.general.data_segment",
-    "sarkit.standards.general.format_function",
-    "sarkit.standards.general.nitf",
-    "sarkit.standards.general.nitf_elements.base",
-    "sarkit.standards.general.nitf_elements.des",
-    "sarkit.standards.general.nitf_elements.graphics",
-    "sarkit.standards.general.nitf_elements.image",
-    "sarkit.standards.general.nitf_elements.nitf_head",
-    "sarkit.standards.general.nitf_elements.res",
-    "sarkit.standards.general.nitf_elements.security",
-    "sarkit.standards.general.nitf_elements.text",
-    "sarkit.standards.general.slice_parsing"
+    "sarkit._nitf.base",
+    "sarkit._nitf.data_segment",
+    "sarkit._nitf.format_function",
+    "sarkit._nitf.nitf",
+    "sarkit._nitf.nitf_elements.base",
+    "sarkit._nitf.nitf_elements.des",
+    "sarkit._nitf.nitf_elements.graphics",
+    "sarkit._nitf.nitf_elements.image",
+    "sarkit._nitf.nitf_elements.nitf_head",
+    "sarkit._nitf.nitf_elements.res",
+    "sarkit._nitf.nitf_elements.security",
+    "sarkit._nitf.nitf_elements.text",
+    "sarkit._nitf.slice_parsing"
 ]
 ignore_errors = true
 

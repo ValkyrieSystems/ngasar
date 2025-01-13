@@ -5,8 +5,8 @@ import lxml.etree
 import numpy as np
 import pytest
 
+import sarkit._nitf.nitf
 import sarkit.processing.pixel_type
-import sarkit.standards.general.nitf
 import sarkit.standards.sicd.io
 import sarkit.standards.sicd.xml
 
@@ -161,7 +161,7 @@ def test_roundtrip(tmp_path, sicd_xml, pixel_type):
 
 
 def test_nitfheaderfields_from_header():
-    header = sarkit.standards.general.nitf.NITFHeader()
+    header = sarkit._nitf.nitf.NITFHeader()
     header.OSTAID = "ostaid"
     header.FTITLE = "ftitle"
     # Data is unclassified.  These fields are filled for testing purposes only.
@@ -184,7 +184,7 @@ def test_nitfheaderfields_from_header():
     header.ONAME = "oname"
     header.OPHONE = "ophone"
 
-    fields = sarkit.standards.sicd.io.SicdNitfHeaderFields.from_header(header)
+    fields = sarkit.standards.sicd.io.SicdNitfHeaderFields._from_header(header)
     assert fields.ostaid == header.OSTAID
     assert fields.ftitle == header.FTITLE
     assert fields.security.clas == header.Security.CLAS
@@ -208,11 +208,11 @@ def test_nitfheaderfields_from_header():
 
 def test_nitfimagesegmentfields_from_header():
     comments = ["first", "second"]
-    header = sarkit.standards.general.nitf.ImageSegmentHeader(PVTYPE="INT")
+    header = sarkit._nitf.nitf.ImageSegmentHeader(PVTYPE="INT")
     header.ISORCE = "isorce"
-    header.Comments = sarkit.standards.general.nitf_elements.image.ImageComments(
+    header.Comments = sarkit._nitf.nitf_elements.image.ImageComments(
         [
-            sarkit.standards.general.nitf_elements.image.ImageComment(COMMENT=comment)
+            sarkit._nitf.nitf_elements.image.ImageComment(COMMENT=comment)
             for comment in comments
         ]
     )
@@ -234,7 +234,7 @@ def test_nitfimagesegmentfields_from_header():
     header.Security.SRDT = ""
     header.Security.CTLN = "ctln_h"
 
-    fields = sarkit.standards.sicd.io.SicdNitfImageSegmentFields.from_header(header)
+    fields = sarkit.standards.sicd.io.SicdNitfImageSegmentFields._from_header(header)
     assert fields.isorce == header.ISORCE
     assert fields.icom == comments
     assert fields.security.clas == header.Security.CLAS
@@ -255,7 +255,7 @@ def test_nitfimagesegmentfields_from_header():
 
 
 def test_nitfdesegmentfields_from_header():
-    header = sarkit.standards.general.nitf.DataExtensionHeader(PVTYPE="INT")
+    header = sarkit._nitf.nitf.DataExtensionHeader(PVTYPE="INT")
     header.UserHeader.DESSHRP = "desshrp"
     header.UserHeader.DESSHLI = "desshli"
     header.UserHeader.DESSHLIN = "desshlin"
@@ -278,7 +278,7 @@ def test_nitfdesegmentfields_from_header():
     header.Security.SRDT = ""
     header.Security.CTLN = "ctln_h"
 
-    fields = sarkit.standards.sicd.io.SicdNitfDESegmentFields.from_header(header)
+    fields = sarkit.standards.sicd.io.SicdNitfDESegmentFields._from_header(header)
     assert fields.desshrp == header.UserHeader.DESSHRP
     assert fields.desshli == header.UserHeader.DESSHLI
     assert fields.desshlin == header.UserHeader.DESSHLIN

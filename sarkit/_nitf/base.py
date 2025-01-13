@@ -11,7 +11,7 @@ from typing import List, Optional, Sequence, Tuple, Union
 
 import numpy
 
-from sarkit.standards.general.data_segment import (
+from .data_segment import (
     DataSegment,
     extract_string_from_subscript,
 )

@@ -3,14 +3,14 @@ from io import BytesIO
 
 import numpy
 
-from sarkit.standards.general.data_segment import (
+from sarkit._nitf.data_segment import (
     BandAggregateSegment,
     BlockAggregateSegment,
     FileReadDataSegment,
     NumpyArraySegment,
     SubsetSegment,
 )
-from sarkit.standards.general.format_function import ComplexFormatFunction
+from sarkit._nitf.format_function import ComplexFormatFunction
 
 
 class TestNumpyArraySegment(unittest.TestCase):

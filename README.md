@@ -2,7 +2,7 @@
 
 <img src="https://raw.githubusercontent.com/ValkyrieSystems/sarkit/main/docs/source/_static/sarkit_logo.png" width=200>
 
-[![Python package](https://github.com/ValkyrieSystems/sarkit/actions/workflows/python-package.yml/badge.svg)](https://github.com/ValkyrieSystems/sarkit/actions/workflows/python-package.yml)
+[![Tests](https://github.com/ValkyrieSystems/sarkit/actions/workflows/tests.yml/badge.svg)](https://github.com/ValkyrieSystems/sarkit/actions/workflows/tests.yml)
 [![Documentation Status](https://readthedocs.org/projects/sarkit/badge/?version=latest)](https://sarkit.readthedocs.io/en/latest/?badge=latest)
 
 </div>

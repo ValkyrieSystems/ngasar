@@ -2,7 +2,7 @@ import unittest
 
 import numpy
 
-from sarkit.standards.general.format_function import (
+from sarkit._nitf.format_function import (
     ComplexFormatFunction,
     IdentityFunction,
     SingleLUTFormatFunction,

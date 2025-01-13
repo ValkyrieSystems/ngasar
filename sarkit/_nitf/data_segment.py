@@ -12,13 +12,13 @@ from typing import BinaryIO, Optional, Sequence, Tuple, Union
 
 import numpy
 
-from sarkit.standards.general.format_function import FormatFunction, IdentityFunction
-from sarkit.standards.general.slice_parsing import (
+from .format_function import FormatFunction, IdentityFunction
+from .slice_parsing import (
     get_slice_result_size,
     get_subscript_result_size,
     verify_subscript,
 )
-from sarkit.standards.general.utils import is_file_like
+from .utils import is_file_like
 
 logger = logging.getLogger(__name__)
 

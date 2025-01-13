@@ -40,8 +40,8 @@ import sarkit.standards.sicd.io as ss_io
 import sarkit.standards.sicd.projection as ss_proj
 import sarkit.standards.sicd.xml as ss_xml
 import sarkit.verification.consistency as con
+from sarkit._nitf.nitf import NITFDetails
 from sarkit.standards import geocoords
-from sarkit.standards.general.nitf import NITFDetails
 
 logger = logging.getLogger(__name__)
 

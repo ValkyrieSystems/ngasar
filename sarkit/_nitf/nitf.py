@@ -9,8 +9,8 @@ from typing import BinaryIO, List, Optional, Sequence, Tuple, Union
 
 import numpy
 
-from sarkit.standards.general.base import BaseReader, BaseWriter, SarpyIOError
-from sarkit.standards.general.data_segment import (
+from .base import BaseReader, BaseWriter, SarpyIOError
+from .data_segment import (
     BandAggregateSegment,
     BlockAggregateSegment,
     DataSegment,
@@ -19,20 +19,20 @@ from sarkit.standards.general.data_segment import (
     NumpyMemmapSegment,
     SubsetSegment,
 )
-from sarkit.standards.general.format_function import (
+from .format_function import (
     ComplexFormatFunction,
     FormatFunction,
     SingleLUTFormatFunction,
 )
-from sarkit.standards.general.nitf_elements.des import DataExtensionHeader
-from sarkit.standards.general.nitf_elements.graphics import GraphicsSegmentHeader
-from sarkit.standards.general.nitf_elements.image import (
+from .nitf_elements.des import DataExtensionHeader
+from .nitf_elements.graphics import GraphicsSegmentHeader
+from .nitf_elements.image import (
     ImageSegmentHeader,
     MaskSubheader,
 )
 
 # noinspection PyProtectedMember
-from sarkit.standards.general.nitf_elements.nitf_head import (
+from .nitf_elements.nitf_head import (
     DataExtensionsType,
     GraphicsSegmentsType,
     ImageSegmentsType,
@@ -41,9 +41,9 @@ from sarkit.standards.general.nitf_elements.nitf_head import (
     TextSegmentsType,
     _ItemArrayHeaders,
 )
-from sarkit.standards.general.nitf_elements.res import ReservedExtensionHeader
-from sarkit.standards.general.nitf_elements.text import TextSegmentHeader
-from sarkit.standards.general.utils import is_file_like, is_real_file
+from .nitf_elements.res import ReservedExtensionHeader
+from .nitf_elements.text import TextSegmentHeader
+from .utils import is_file_like, is_real_file
 
 system_os = platform.system()
 if system_os == "Linux":

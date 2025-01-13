@@ -4,7 +4,7 @@ import lxml
 import numpy as np
 import pytest
 
-import sarkit.standards.general.nitf
+import sarkit._nitf.nitf
 import sarkit.standards.sidd.io as siddio
 import sarkit.standards.sidd.xml
 
@@ -172,7 +172,7 @@ def test_roundtrip(force_segmentation, sidd_xml, tmp_path, monkeypatch):
     if force_segmentation:
         assert num_expected_imseg > 2  # make sure the monkeypatch caused segmentation
     with out_sidd.open("rb") as file:
-        nitf_details = sarkit.standards.general.nitf.NITFDetails(file)
+        nitf_details = sarkit._nitf.nitf.NITFDetails(file)
         assert num_expected_imseg == len(nitf_details.img_headers)
 
     with out_sidd.open("rb") as file:

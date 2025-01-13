@@ -9,7 +9,7 @@ from typing import Optional, Tuple, Union
 
 import numpy
 
-from sarkit.standards.general.slice_parsing import get_subscript_result_size
+from .slice_parsing import get_subscript_result_size
 
 logger = logging.getLogger(__name__)
 

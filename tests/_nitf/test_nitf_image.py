@@ -1,6 +1,6 @@
 import pytest
 
-import sarkit.standards.general.nitf_elements.image
+import sarkit._nitf.nitf_elements.image
 
 
 def __make_band_bytes(numbands):
@@ -22,18 +22,15 @@ def __make_band_bytes(numbands):
 
 
 def test_imagebands_minlength():
-    assert (
-        sarkit.standards.general.nitf_elements.image.ImageBands.minimum_length()
-        == len(__make_band_bytes(1))
+    assert sarkit._nitf.nitf_elements.image.ImageBands.minimum_length() == len(
+        __make_band_bytes(1)
     )
 
 
 @pytest.mark.parametrize("num_bands", (1, 24))
 def test_imagebands(num_bands):
     band_bytes = __make_band_bytes(num_bands)
-    parsed_bands = sarkit.standards.general.nitf_elements.image.ImageBands.from_bytes(
-        band_bytes, 0
-    )
+    parsed_bands = sarkit._nitf.nitf_elements.image.ImageBands.from_bytes(band_bytes, 0)
     assert len(parsed_bands.values) == num_bands
     assert all(int(x.ISUBCAT[3:]) == n for n, x in enumerate(parsed_bands.values))
     assert parsed_bands.get_bytes_length() == len(band_bytes)
@@ -41,15 +38,13 @@ def test_imagebands(num_bands):
 
 
 def test_imagebands_values_update():
-    parsed_bands = sarkit.standards.general.nitf_elements.image.ImageBands.from_bytes(
+    parsed_bands = sarkit._nitf.nitf_elements.image.ImageBands.from_bytes(
         __make_band_bytes(1), 0
     )
     for nbands in range(1, 11):
         parsed_bands.values = [parsed_bands.values[0]] * nbands
         orig_bytes = parsed_bands.to_bytes()
-        round_trip_bytes = (
-            sarkit.standards.general.nitf_elements.image.ImageBands.from_bytes(
-                orig_bytes, 0
-            ).to_bytes()
-        )
+        round_trip_bytes = sarkit._nitf.nitf_elements.image.ImageBands.from_bytes(
+            orig_bytes, 0
+        ).to_bytes()
         assert orig_bytes == round_trip_bytes

@@ -20,12 +20,12 @@ import lxml.etree
 import numpy as np
 import numpy.typing as npt
 
-import sarkit.standards.general.nitf
-import sarkit.standards.general.nitf_elements.des
-import sarkit.standards.general.nitf_elements.image
-import sarkit.standards.general.nitf_elements.nitf_head
-import sarkit.standards.general.nitf_elements.security
-import sarkit.standards.general.utils
+import sarkit._nitf.nitf
+import sarkit._nitf.nitf_elements.des
+import sarkit._nitf.nitf_elements.image
+import sarkit._nitf.nitf_elements.nitf_head
+import sarkit._nitf.nitf_elements.security
+import sarkit._nitf.utils
 import sarkit.standards.geocoords
 import sarkit.standards.sicd.io as sicdio
 import sarkit.standards.sidd.xml
@@ -129,14 +129,12 @@ class SiddNitfImageSegmentFields:
     icom: list[str] = dataclasses.field(default_factory=list)
 
     @classmethod
-    def from_header(
-        cls, image_header: sarkit.standards.general.nitf.ImageSegmentHeader
-    ) -> Self:
+    def _from_header(cls, image_header: sarkit._nitf.nitf.ImageSegmentHeader) -> Self:
         """Construct from a NITF ImageSegmentHeader object"""
         return cls(
             tgtid=image_header.TGTID,
             iid2=image_header.IID2,
-            security=SiddNitfSecurityFields.from_security_tags(image_header.Security),
+            security=SiddNitfSecurityFields._from_security_tags(image_header.Security),
             icom=[
                 val.to_bytes().decode().rstrip() for val in image_header.Comments.values
             ],
@@ -470,7 +468,7 @@ class SiddNitfReader:
                 "seek(0) must be the start of the NITF"
             )  # this is a NITFDetails limitation
 
-        self._nitf_details = sarkit.standards.general.nitf.NITFDetails(self._file)
+        self._nitf_details = sarkit._nitf.nitf.NITFDetails(self._file)
 
         im_segments = {}
         for imseg_index, img_header in enumerate(self._nitf_details.img_headers):
@@ -492,14 +490,14 @@ class SiddNitfReader:
             image_segment_collections.setdefault(image_num, [])
             image_segment_collections[image_num].append(idx)
 
-        self._nitf_reader = sarkit.standards.general.nitf.NITFReader(
+        self._nitf_reader = sarkit._nitf.nitf.NITFReader(
             nitf_details=self._nitf_details,
             image_segment_collections=tuple(
                 (tuple(val) for val in image_segment_collections.values())
             ),
         )
 
-        self.header_fields = SiddNitfHeaderFields.from_header(
+        self.header_fields = SiddNitfHeaderFields._from_header(
             self._nitf_details.nitf_header
         )
         self.plan = SiddNitfPlan(header_fields=self.header_fields)
@@ -507,7 +505,7 @@ class SiddNitfReader:
         image_number = 0
         for idx in range(self._nitf_details.des_subheader_offsets.size):
             subhead_bytes = self._nitf_details.get_des_subheader_bytes(idx)
-            des_header = sarkit.standards.general.nitf.DataExtensionHeader.from_bytes(
+            des_header = sarkit._nitf.nitf.DataExtensionHeader.from_bytes(
                 self._nitf_details.get_des_subheader_bytes(0), 0
             )
             if subhead_bytes.startswith(b"DEXML_DATA_CONTENT"):
@@ -519,11 +517,11 @@ class SiddNitfReader:
                     continue
 
                 if "SIDD" in xmltree.getroot().tag:
-                    nitf_de_fields = SiddNitfDESegmentFields.from_header(des_header)
+                    nitf_de_fields = SiddNitfDESegmentFields._from_header(des_header)
                     if len(self.plan.images) < len(image_segment_collections):
                         # user settable fields should be the same for all image segments
                         im_idx = im_segments[image_number][0]
-                        im_fields = SiddNitfImageSegmentFields.from_header(
+                        im_fields = SiddNitfImageSegmentFields._from_header(
                             self._nitf_details.img_headers[im_idx]
                         )
                         self.plan.add_image(
@@ -536,12 +534,12 @@ class SiddNitfReader:
                         # No matching product image, treat it as a product support XML
                         self.plan.add_product_support_xml(xmltree, nitf_de_fields)
                 elif "SICD" in xmltree.getroot().tag:
-                    nitf_de_fields = sicdio.SicdNitfDESegmentFields.from_header(
+                    nitf_de_fields = sicdio.SicdNitfDESegmentFields._from_header(
                         des_header
                     )
                     self.plan.add_sicd_xml(xmltree, nitf_de_fields)
                 else:
-                    nitf_de_fields = SiddNitfDESegmentFields.from_header(des_header)
+                    nitf_de_fields = SiddNitfDESegmentFields._from_header(des_header)
                     self.plan.add_product_support_xml(xmltree, nitf_de_fields)
 
         # TODO Legends
@@ -631,12 +629,12 @@ class SiddNitfWriter:
 
         # CLEVEL and FL will be corrected...
         now_dt = datetime.datetime.now(datetime.timezone.utc)
-        header = sarkit.standards.general.nitf_elements.nitf_head.NITFHeader(
+        header = sarkit._nitf.nitf_elements.nitf_head.NITFHeader(
             CLEVEL=3,
             OSTAID=self._nitf_plan.header_fields.ostaid,
             FDT=now_dt.strftime("%Y%m%d%H%M%S"),
             FTITLE=self._nitf_plan.header_fields.ftitle,
-            Security=self._nitf_plan.header_fields.security.as_security_tags(),
+            Security=self._nitf_plan.header_fields.security._as_security_tags(),
             ONAME=self._nitf_plan.header_fields.oname,
             OPHONE=self._nitf_plan.header_fields.ophone,
             FL=0,
@@ -670,14 +668,14 @@ class SiddNitfWriter:
             rows = xml_helper.load("./{*}Measurement/{*}PixelFootprint/{*}Row")
             cols = xml_helper.load("./{*}Measurement/{*}PixelFootprint/{*}Col")
 
-            subhead = sarkit.standards.general.nitf_elements.image.ImageSegmentHeader(
+            subhead = sarkit._nitf.nitf_elements.image.ImageSegmentHeader(
                 IID1=imhdr.iid1,
                 IDATIM=xml_helper.load(
                     "./{*}ExploitationFeatures/{*}Collection/{*}Information/{*}CollectionDateTime"
                 ).strftime("%Y%m%d%H%M%S"),
                 TGTID=imageinfo.is_fields.tgtid,
                 IID2=imageinfo.is_fields.iid2,
-                Security=imageinfo.is_fields.security.as_security_tags(),
+                Security=imageinfo.is_fields.security._as_security_tags(),
                 ISORCE=xml_helper.load(
                     "./{*}ExploitationFeatures/{*}Collection/{*}Information/{*}SensorName"
                 ),
@@ -688,17 +686,15 @@ class SiddNitfWriter:
                 ICAT="SAR",
                 ABPP=pixel_info["dtype"].itemsize * 8,
                 ICORDS="G",
-                IGEOLO=sicdio._interpolate_corner_points_string(
+                IGEOLO=sarkit._nitf.utils._interpolate_corner_points_string(
                     np.array(image_segment_coordinates[image_num][-1], dtype=np.int64),
                     rows,
                     cols,
                     icp,
                 ),
-                Comments=sarkit.standards.general.nitf_elements.image.ImageComments(
+                Comments=sarkit._nitf.nitf_elements.image.ImageComments(
                     [
-                        sarkit.standards.general.nitf_elements.image.ImageComment(
-                            COMMENT=comment
-                        )
+                        sarkit._nitf.nitf_elements.image.ImageComment(COMMENT=comment)
                         for comment in imageinfo.is_fields.icom
                     ]
                 ),
@@ -712,18 +708,16 @@ class SiddNitfWriter:
                 IDLVL=imhdr.idlvl,
                 IALVL=imhdr.ialvl,
                 ILOC=imhdr.iloc,
-                Bands=sarkit.standards.general.nitf_elements.image.ImageBands(
+                Bands=sarkit._nitf.nitf_elements.image.ImageBands(
                     values=[
-                        sarkit.standards.general.nitf_elements.image.ImageBand(
+                        sarkit._nitf.nitf_elements.image.ImageBand(
                             ISUBCAT="", IREPBAND=entry
                         )
                         for entry in pixel_info["IREPBANDn"]
                     ]
                 ),
             )
-            image_managers.append(
-                sarkit.standards.general.nitf.ImageSubheaderManager(subhead)
-            )
+            image_managers.append(sarkit._nitf.nitf.ImageSubheaderManager(subhead))
 
         # TODO add image_managers for legends
         assert not self._nitf_plan.legends
@@ -741,9 +735,9 @@ class SiddNitfWriter:
             for icp_lat, icp_lon in itertools.chain(icp, [icp[0]]):
                 desshlpg += f"{icp_lat:0=+12.8f}{icp_lon:0=+13.8f}"
 
-            deshead = sarkit.standards.general.nitf_elements.des.DataExtensionHeader(
-                Security=imageinfo.des_fields.security.as_security_tags(),
-                UserHeader=sarkit.standards.general.nitf_elements.des.XMLDESSubheader(
+            deshead = sarkit._nitf.nitf_elements.des.DataExtensionHeader(
+                Security=imageinfo.des_fields.security._as_security_tags(),
+                UserHeader=sarkit._nitf.nitf_elements.des.XMLDESSubheader(
                     DESSHSI=SPECIFICATION_IDENTIFIER,
                     DESSHSV=VERSION_INFO[xmlns]["version"],
                     DESSHSD=VERSION_INFO[xmlns]["date"],
@@ -757,7 +751,7 @@ class SiddNitfWriter:
                 ),
             )
             des_managers.append(
-                sarkit.standards.general.nitf.DESSubheaderManager(
+                sarkit._nitf.nitf.DESSubheaderManager(
                     deshead, lxml.etree.tostring(imageinfo.sidd_xmltree)
                 )
             )
@@ -769,9 +763,9 @@ class SiddNitfWriter:
                 lxml.etree.QName(prodinfo.product_support_xmltree.getroot()).namespace
                 or ""
             )
-            deshead = sarkit.standards.general.nitf_elements.des.DataExtensionHeader(
-                Security=prodinfo.des_fields.security.as_security_tags(),
-                UserHeader=sarkit.standards.general.nitf_elements.des.XMLDESSubheader(
+            deshead = sarkit._nitf.nitf_elements.des.DataExtensionHeader(
+                Security=prodinfo.des_fields.security._as_security_tags(),
+                UserHeader=sarkit._nitf.nitf_elements.des.XMLDESSubheader(
                     DESSHSI=sidd_uh.DESSHSI,
                     DESSHSV="v" + sidd_uh.DESSHSV,
                     DESSHSD=sidd_uh.DESSHSD,
@@ -785,7 +779,7 @@ class SiddNitfWriter:
                 ),
             )
             des_managers.append(
-                sarkit.standards.general.nitf.DESSubheaderManager(
+                sarkit._nitf.nitf.DESSubheaderManager(
                     deshead, lxml.etree.tostring(prodinfo.product_support_xmltree)
                 )
             )
@@ -798,7 +792,7 @@ class SiddNitfWriter:
                 )
             )
 
-        writing_details = sarkit.standards.general.nitf.NITFWritingDetails(
+        writing_details = sarkit._nitf.nitf.NITFWritingDetails(
             header,
             image_managers=tuple(image_managers),
             image_segment_collections=tuple(
@@ -810,7 +804,7 @@ class SiddNitfWriter:
             des_managers=tuple(des_managers),
         )
 
-        self._nitf_writer = sarkit.standards.general.nitf.NITFWriter(
+        self._nitf_writer = sarkit._nitf.nitf.NITFWriter(
             file_object=self._file,
             writing_details=writing_details,
         )

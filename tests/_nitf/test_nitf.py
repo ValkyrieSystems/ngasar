@@ -3,12 +3,12 @@ import pathlib
 
 import numpy as np
 
-import sarkit.standards.general.nitf
+import sarkit._nitf.nitf
 
 
 def test_iq_band_interleaved_by_block(tmp_path):
     in_nitf = pathlib.Path(__file__).parent / "data/iq.nitf"
-    with sarkit.standards.general.nitf.NITFReader(str(in_nitf)) as reader:
+    with sarkit._nitf.nitf.NITFReader(str(in_nitf)) as reader:
         data = reader.read()
         data_raw = reader.read_raw()
         assert data_raw.ndim == data.ndim + 1
@@ -26,16 +26,12 @@ def test_iq_band_interleaved_by_block(tmp_path):
         assert np.array_equal(data, manual_data)
 
         out_nitf = tmp_path / "out.nitf"
-        writer_details = sarkit.standards.general.nitf.NITFWritingDetails(
+        writer_details = sarkit._nitf.nitf.NITFWritingDetails(
             reader.nitf_details.nitf_header,
-            (
-                sarkit.standards.general.nitf.ImageSubheaderManager(
-                    reader.get_image_header(0)
-                ),
-            ),
+            (sarkit._nitf.nitf.ImageSubheaderManager(reader.get_image_header(0)),),
             reader.image_segment_collections,
         )
-        with sarkit.standards.general.nitf.NITFWriter(
+        with sarkit._nitf.nitf.NITFWriter(
             str(out_nitf), writing_details=writer_details
         ) as writer:
             writer.write(data)
@@ -44,23 +40,17 @@ def test_iq_band_interleaved_by_block(tmp_path):
 
 def test_write_filehandle(tmp_path):
     in_nitf = pathlib.Path(__file__).parent / "data/iq.nitf"
-    with sarkit.standards.general.nitf.NITFReader(str(in_nitf)) as reader:
+    with sarkit._nitf.nitf.NITFReader(str(in_nitf)) as reader:
         data = reader.read()
-        writer_details = sarkit.standards.general.nitf.NITFWritingDetails(
+        writer_details = sarkit._nitf.nitf.NITFWritingDetails(
             reader.nitf_details.nitf_header,
-            (
-                sarkit.standards.general.nitf.ImageSubheaderManager(
-                    reader.get_image_header(0)
-                ),
-            ),
+            (sarkit._nitf.nitf.ImageSubheaderManager(reader.get_image_header(0)),),
             reader.image_segment_collections,
         )
 
     out_nitf = tmp_path / "output.nitf"
     with out_nitf.open("wb") as fd:
-        with sarkit.standards.general.nitf.NITFWriter(
-            fd, writing_details=writer_details
-        ) as writer:
+        with sarkit._nitf.nitf.NITFWriter(fd, writing_details=writer_details) as writer:
             writer.write(data)
 
         assert not fd.closed
